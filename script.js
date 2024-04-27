@@ -35,22 +35,22 @@ const analizadorLexico = (input) => {
     palabras.forEach(palabra => {
         // Comprobar si la palabra es una palabra reservada
         if (palabrasReservadas.includes(palabra)) {
-            tokens.push({ tipo: 'Palabra Reservada', valor: palabra });
+            tokens.push({ tipo: 'Palabra Reservada', valor: palabra }); //Array de objetos
         }
         // Comprobar si la palabra es un identificador válido
-        else if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(palabra)) {
+        else if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(palabra)) {//? expresión regular para validar un identificador
             tokens.push({ tipo: 'Identificador', valor: palabra });
         }
         // Comprobar si la palabra es un número válido
-        else if (/^\d+(\.\d+)?$/.test(palabra)) {
+        else if (/^\d+(\.\d+)?$/.test(palabra)) {//? expresión regular para validar un número es
             tokens.push({ tipo: 'Número', valor: palabra });
         }
         // Comprobar si la palabra es un operador válido
-        else if (/^[\+\-\*\/=]$/.test(palabra)) {
+        else if (/^[\+\-\*\/=]$/.test(palabra)) {//? expresión regular para validar un operador
             tokens.push({ tipo: 'Operador', valor: palabra });
         }
         // Comprobar si la palabra es un delimitador válido
-        else if (/^[\(\)\{\}\[\]\;]$/.test(palabra)) {
+        else if (/^[\(\)\{\}\[\]\;]$/.test(palabra)) {//? expresión regular para validar un delimitador
             tokens.push({ tipo: 'Delimitador', valor: palabra });
         }
         // Si la palabra no coincide con ningún patrón conocido, se marca como desconocida
