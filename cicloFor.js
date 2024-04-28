@@ -21,8 +21,20 @@
 // }
 
 //Es una forma directa y concisa de acceder a los valores de los elementos sin necesidad de usar un índice.
-const amigos = ['Alfonso', 'Allan', 'Monche']
+// const amigos = ['Alfonso', 'Allan', 'Monche']
 
-for (let property of amigos) {
-    console.log(property)
-}
+// for (let property of amigos) {
+//     console.log(property)
+// }
+
+//?Ejercicio
+// const array1 = [1, 2, 3, 4];
+// let ultimoElemento;
+
+// array1.forEach((elemento, indice) => {
+//     if (indice === array1.length - 1) {
+//         ultimoElemento = elemento;
+//     }
+// });
+
+// console.log(ultimoElemento);
