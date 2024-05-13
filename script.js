@@ -37,7 +37,6 @@ function mostrarAnalisisSintactico(arbolSintaxis) {
     console.log(ver)
 }
 
-
 // Función que analiza léxicamente el código de entrada y devuelve una lista de tokens
 const analizadorLexico = (input) => {
     const tokens = [];
