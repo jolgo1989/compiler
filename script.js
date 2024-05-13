@@ -5,13 +5,11 @@ const Button = document.getElementById("buttonAnalizar");
 Button.addEventListener("click", () => {
     // Obtener el valor del código de entrada del usuario
     const inputCode = document.getElementById('inputCode').value;
-
     // Llamar a la función analizadorLexico para obtener los tokens del código de entrada
     const tokens = analizadorLexico(inputCode);
 
-
     // Obtener el elemento de salida del DOM
-    const output = document.getElementById('outputLexico');
+    const output = document.getElementById('outputLexico2');
 
     // Limpiar el contenido anterior del elemento de salida
     output.innerHTML = '';
@@ -25,17 +23,14 @@ Button.addEventListener("click", () => {
     });
 
 
+    //? mostrarAnalisisSintactico;
     let ast = analisisSintactico(tokens);
-    mostrarAnalisisSintactico(ast);
-
-
+    const resultado = JSON.stringify(ast, null, 2);
+    document.getElementById("outputSintactico2").textContent = resultado;
+    // console.log(ver)
 });
 
-function mostrarAnalisisSintactico(arbolSintaxis) {
-    const resultado = JSON.stringify(arbolSintaxis, null, 2);
-    let ver = document.getElementById("outputSintactico").textContent = resultado;
-    console.log(ver)
-}
+
 
 // Función que analiza léxicamente el código de entrada y devuelve una lista de tokens
 const analizadorLexico = (input) => {
@@ -77,7 +72,7 @@ const analizadorLexico = (input) => {
 }
 
 
-function analisisSintactico(tokens) {
+const analisisSintactico = (tokens) => {
     let current = 0;
     function walk() {
 
