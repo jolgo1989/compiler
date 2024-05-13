@@ -25,25 +25,18 @@ Button.addEventListener("click", () => {
     });
 
 
-    //? Mostrar el analisis Sintactico en el div
-    // Llamar al analizador sintáctico con los tokens obtenidos del análisis léxico
-    const sintacticoResultado = document.getElementById('outputSintactico');
-    sintacticoResultado.innerHTML = ''; // Limpiar el contenido anterior
-
-    try {
-        // Llamar al analizador sintáctico y mostrar el resultado
-        analizadorSintactico(tokens);
-        sintacticoResultado.textContent = 'Análisis sintáctico completado sin errores';
-    } catch (error) {
-        sintacticoResultado.textContent = `Error en el análisis sintáctico: ${error.message}`;
-    }
+    let ast = analisisSintactico(tokens);
+    mostrarAnalisisSintactico(ast);
 
 
-
-
-    // Llamar al analizador sintáctico con los tokens obtenidos del análisis léxico
-    analizadorSintactico(tokens);
 });
+
+function mostrarAnalisisSintactico(arbolSintaxis) {
+    const resultado = JSON.stringify(arbolSintaxis, null, 2);
+    let ver = document.getElementById("outputSintactico").textContent = resultado;
+    console.log(ver)
+}
+
 
 // Función que analiza léxicamente el código de entrada y devuelve una lista de tokens
 const analizadorLexico = (input) => {
@@ -57,23 +50,23 @@ const analizadorLexico = (input) => {
     palabras.forEach(palabra => {
         // Comprobar si la palabra es una palabra reservada
         if (palabrasReservadas.includes(palabra)) {
-            tokens.push({ tipo: 'Palabra Reservada', valor: palabra }); //Array de objetos
+            tokens.push({ tipo: 'Palabra reservada', valor: palabra }); //Array de objetos
         }
         // Comprobar si la palabra es un identificador válido
         else if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(palabra)) {//? expresión regular para validar un identificador
-            tokens.push({ tipo: 'Identificador', valor: palabra });
+            tokens.push({ tipo: 'identificador', valor: palabra });
         }
         // Comprobar si la palabra es un número válido
         else if (/^\d+(\.\d+)?$/.test(palabra)) {//? expresión regular para validar un número es
-            tokens.push({ tipo: 'Número', valor: palabra });
+            tokens.push({ tipo: 'numero', valor: palabra });
         }
         // Comprobar si la palabra es un operador válido
         else if (/^[\+\-\*\/=]$/.test(palabra)) {//? expresión regular para validar un operador
-            tokens.push({ tipo: 'Operador', valor: palabra });
+            tokens.push({ tipo: 'operador', valor: palabra });
         }
         // Comprobar si la palabra es un delimitador válido
         else if (/^[\(\)\{\}\[\]\;]$/.test(palabra)) {//? expresión regular para validar un delimitador
-            tokens.push({ tipo: 'Delimitador', valor: palabra });
+            tokens.push({ tipo: 'delimitador', valor: palabra });
         }
         // Si la palabra no coincide con ningún patrón conocido, se marca como desconocida
         else {
@@ -85,65 +78,64 @@ const analizadorLexico = (input) => {
 }
 
 
-const analizadorSintactico = (tokens) => {
-    let index = 0;
+function analisisSintactico(tokens) {
+    let current = 0;
+    function walk() {
 
-    // Función para obtener el siguiente token
-    const obtenerSiguienteToken = () => {
-        index++;
-        return tokens[index];
-    };
-
-    // Función para verificar si hay un token específico
-    const verificarToken = (tipo) => {
-        return tokens[index].tipo === tipo;
-    };
-
-    // Función para el análisis sintáctico de la expresión if
-    const analizarIf = () => {
-        // Verificar que el token actual sea la palabra reservada 'if'
-        if (!verificarToken('Palabra Reservada') || tokens[index].valor !== 'if') {
-            throw new Error('Se esperaba la palabra reservada "if"');
+        let token = tokens[current];
+        if (token.tipo === 'Palabra reservada') {
+            current++;
+            return {
+                type: 'Palabra reservada',
+                value: token.valor
+            };
         }
-        obtenerSiguienteToken(); // Avanzar al siguiente token
-        // Verificar que el siguiente token sea un delimitador '('
-        if (!verificarToken('Delimitador') || tokens[index].valor !== '(') {
-            throw new Error('Se esperaba un delimitador "("');
-        }
-        obtenerSiguienteToken(); // Avanzar al siguiente token
-        // Lógica para analizar la condición dentro del if...
-        // Aquí puedes agregar tu lógica para analizar la condición dentro del if
-        // Podrías usar una función recursiva para analizar expresiones más complejas
-        // Verificar que el siguiente token sea un delimitador ')'
-        if (!verificarToken('Delimitador') || tokens[index].valor !== ')') {
-            throw new Error('Se esperaba un delimitador ")"');
-        }
-        obtenerSiguienteToken(); // Avanzar al siguiente token
-        // Lógica para analizar el bloque de código dentro del if...
-        // Aquí puedes agregar tu lógica para analizar el bloque de código dentro del if
-    };
 
-    // Función principal para iniciar el análisis sintáctico
-    const iniciarAnalisisSintactico = () => {
-        try {
-            while (index < tokens.length) {
-                if (verificarToken('Palabra Reservada') && tokens[index].valor === 'if') {
-                    analizarIf(); // Analizar la expresión if
-                }
-                // Aquí podrías agregar más lógica para analizar otras estructuras de código
-                else {
-                    throw new Error('Token inesperado');
-                }
-            }
-            console.log('Análisis sintáctico completado sin errores');
-        } catch (error) {
-            console.error('Error en el análisis sintáctico:', error.message);
-        }
-    };
+        if (token.tipo === 'numero') {
+            current++;
+            return {
+                type: 'ExpresionNumerica',
+                value: token.valor
+            };
 
-    // Iniciar el análisis sintáctico
-    iniciarAnalisisSintactico();
-};
+        }
+        if (token.tipo === 'operador') {
+            current++;
+            return {
+                type: 'ExpresionOperacion',
+                name: token.valor
+            };
+
+        }
+
+        if (token.tipo === 'identificador') {
+            current++;
+            return {
+                type: 'ExpresionIdentificador',
+                name: token.valor
+            };
+        }
+
+        if (token.tipo === 'delimitador') {
+            current++;
+            return {
+                type: 'Delimitador',
+                name: token.valor
+            };
+        }
+
+        throw new TypeError('Tipo de token inesperado: ' + token.tipo);
+    }
+    let ast = {
+        type: 'Program',
+        body: []
+    };
+    while (current < tokens.length) {
+        ast.body.push(walk());
+    }
+    // debugPrint(`se ah completado la fase de analisis sintactico`);
+    return ast;
+}
 
 
 
