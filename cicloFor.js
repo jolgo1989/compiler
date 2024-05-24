@@ -36,12 +36,17 @@
 //         ultimoElemento = elemento;
 //     }
 // });
-
+   
 // console.log(ultimoElemento);
 
+// Validar correo con expresiones regulares
+// const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+// const email = "jlgo60@hotmail.com"
 
-const email = "jlgo60@hotmail.com"
+// console.log(emailRegex.test(email))
 
-console.log(emailRegex.test(email))
+
+
+
+

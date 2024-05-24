@@ -22,12 +22,6 @@ Button.addEventListener("click", () => {
         output.appendChild(tokenElement);
     });
 
-
-    //? mostrarAnalisisSintactico;
-    let ast = analisisSintactico(tokens);
-    const resultado = JSON.stringify(ast, null, 2);
-    document.getElementById("outputSintactico2").textContent = resultado;
-    // console.log(ver)
 });
 
 
@@ -71,65 +65,6 @@ const analizadorLexico = (input) => {
     return tokens;
 }
 
-
-const analisisSintactico = (tokens) => {
-    let current = 0;
-    function walk() {
-
-        let token = tokens[current];
-        if (token.tipo === 'Palabra reservada') {
-            current++;
-            return {
-                type: 'Palabra reservada',
-                value: token.valor
-            };
-        }
-
-        if (token.tipo === 'numero') {
-            current++;
-            return {
-                type: 'ExpresionNumerica',
-                value: token.valor
-            };
-
-        }
-        if (token.tipo === 'operador') {
-            current++;
-            return {
-                type: 'ExpresionOperacion',
-                name: token.valor
-            };
-
-        }
-
-        if (token.tipo === 'identificador') {
-            current++;
-            return {
-                type: 'ExpresionIdentificador',
-                name: token.valor
-            };
-        }
-
-        if (token.tipo === 'delimitador') {
-            current++;
-            return {
-                type: 'Delimitador',
-                name: token.valor
-            };
-        }
-
-        throw new TypeError('Tipo de token inesperado: ' + token.tipo);
-    }
-    let ast = {
-        type: 'Program',
-        body: []
-    };
-    while (current < tokens.length) {
-        ast.body.push(walk());
-    }
-    // debugPrint(`se ah completado la fase de analisis sintactico`);
-    return ast;
-}
 
 
 
