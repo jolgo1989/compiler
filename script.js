@@ -22,6 +22,12 @@ Button.addEventListener("click", () => {
         output.appendChild(tokenElement);
     });
 
+
+    //? mostrarAnalisisSintactico;
+    let ast = analisisSintactico(tokens);
+    const resultado = JSON.stringify(ast, null, 2);
+    document.getElementById("outputSintactico2").textContent = resultado;
+    // console.log(ver)
 });
 
 
@@ -65,6 +71,83 @@ const analizadorLexico = (input) => {
     return tokens;
 }
 
+
+const analisisSintactico = (tokens) => {
+    // Índice actual en la lista de tokens
+    let current = 0;
+
+    /**
+     * Función auxiliar para recorrer y analizar los tokens.
+     * Identifica el tipo de token y lo convierte en una parte del AST.
+
+     */
+    const walk = () => {
+        // Token actual
+        let token = tokens[current];
+
+        // Analizar palabras reservadas
+        if (token.tipo === 'Palabra reservada') {
+            current++;
+            return {
+                type: 'Palabra reservada',
+                value: token.valor
+            };
+        }
+
+        // Analizar números
+        if (token.tipo === 'numero') {
+            current++;
+            return {
+                type: 'ExpresionNumerica',
+                value: token.valor
+            };
+        }
+
+        // Analizar operadores
+        if (token.tipo === 'operador') {
+            current++;
+            return {
+                type: 'ExpresionOperacion',
+                name: token.valor
+            };
+        }
+
+        // Analizar identificadores
+        if (token.tipo === 'identificador') {
+            current++;
+            return {
+                type: 'ExpresionIdentificador',
+                name: token.valor
+            };
+        }
+
+        // Analizar delimitadores
+        if (token.tipo === 'delimitador') {
+            current++;
+            return {
+                type: 'Delimitador',
+                name: token.valor
+            };
+        }
+
+        // Lanzar error si el tipo de token es inesperado
+        throw new TypeError('Tipo de token inesperado: ' + token.tipo);
+    }
+
+    // AST inicial con un nodo de programa vacío
+    let ast = {
+        type: 'Program',
+        body: []
+    };
+
+    // Recorrer todos los tokens y construir el cuerpo del AST
+    while (current < tokens.length) {
+        ast.body.push(walk());
+    }
+
+    // Devolver el AST completo
+    return ast;
+}
 
 
 
