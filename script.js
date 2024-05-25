@@ -27,7 +27,7 @@ Button.addEventListener("click", () => {
     let ast = analisisSintactico(tokens);
     const resultado = JSON.stringify(ast, null, 2);
     document.getElementById("outputSintactico2").textContent = resultado;
-    // console.log(ver)
+
 });
 
 
@@ -134,7 +134,7 @@ const analisisSintactico = (tokens) => {
         throw new TypeError('Tipo de token inesperado: ' + token.tipo);
     }
 
-    // AST inicial con un nodo de programa vacío
+    //todo AST(Árbol de Sintaxis Abstracta) inicial con un nodo de programa vacío
     let ast = {
         type: 'Program',
         body: []
