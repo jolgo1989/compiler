@@ -36,7 +36,8 @@ button:hover {
 }
 
 #outputLexico,
-#outputSintactico {
+#outputSintactico,
+#outputSemantico {
   margin-top: 20px;
   padding: 10px;
   border: 1px solid #ccc;

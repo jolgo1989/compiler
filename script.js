@@ -14,23 +14,23 @@ Button.addEventListener("click", () => {
     // Limpiar el contenido anterior del elemento de salida
     output.innerHTML = '';
 
-    //? Mostrar el analisis lexico en el div
-    // Iterar sobre cada token y agregarlo como un nuevo elemento div al elemento de salida
+    // Mostrar el analisis lexico en el div
     tokens.forEach(token => {
         const tokenElement = document.createElement('div');
         tokenElement.textContent = `${token.tipo}: ${token.valor}`;
         output.appendChild(tokenElement);
     });
 
-
-    //? mostrarAnalisisSintactico;
+    // Mostrar análisis sintáctico
     let ast = analisisSintactico(tokens);
     const resultado = JSON.stringify(ast, null, 2);
     document.getElementById("outputSintactico2").textContent = resultado;
 
+    // Mostrar análisis semántico
+    let simbolos = analisisSemantico(ast);
+    const resultado2 = document.getElementById("semantico");
+    resultado2.textContent = simbolos;
 });
-
-
 
 // Función que analiza léxicamente el código de entrada y devuelve una lista de tokens
 const analizadorLexico = (input) => {
@@ -44,22 +44,22 @@ const analizadorLexico = (input) => {
     palabras.forEach(palabra => {
         // Comprobar si la palabra es una palabra reservada
         if (palabrasReservadas.includes(palabra)) {
-            tokens.push({ tipo: 'Palabra reservada', valor: palabra }); //Array de objetos
+            tokens.push({ tipo: 'Palabra reservada', valor: palabra });
         }
         // Comprobar si la palabra es un identificador válido
-        else if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(palabra)) {//? expresión regular para validar un identificador
+        else if (/^[a-zA-Z][a-zA-Z0-9_]*$/.test(palabra)) {
             tokens.push({ tipo: 'identificador', valor: palabra });
         }
         // Comprobar si la palabra es un número válido
-        else if (/^\d+(\.\d+)?$/.test(palabra)) {//? expresión regular para validar un número es
+        else if (/^\d+(\.\d+)?$/.test(palabra)) {
             tokens.push({ tipo: 'numero', valor: palabra });
         }
         // Comprobar si la palabra es un operador válido
-        else if (/^[\+\-\*\/=]$/.test(palabra)) {//? expresión regular para validar un operador
+        else if (/^[\+\-\*\/=]$/.test(palabra)) {
             tokens.push({ tipo: 'operador', valor: palabra });
         }
         // Comprobar si la palabra es un delimitador válido
-        else if (/^[\(\)\{\}\[\]\;]$/.test(palabra)) {//? expresión regular para validar un delimitador
+        else if (/^[\(\)\{\}\[\]\;]$/.test(palabra)) {
             tokens.push({ tipo: 'delimitador', valor: palabra });
         }
         // Si la palabra no coincide con ningún patrón conocido, se marca como desconocida
@@ -67,52 +67,50 @@ const analizadorLexico = (input) => {
             tokens.push({ tipo: 'Desconocido', valor: palabra });
         }
     });
-
+    debugPrint(`Se ha completado la fase de análisis léxico`);
     return tokens;
 }
 
-
 const analisisSintactico = (tokens) => {
-    // Índice actual en la lista de tokens
     let current = 0;
 
-    /**
-     * Función auxiliar para recorrer y analizar los tokens.
-     * Identifica el tipo de token y lo convierte en una parte del AST.
-
-     */
     const walk = () => {
-        // Token actual
         let token = tokens[current];
 
-        // Analizar palabras reservadas
-        if (token.tipo === 'Palabra reservada') {
+        if (token.tipo === 'Palabra reservada' && token.valor === 'let') {
+            current++;
+            let nameToken = tokens[current];
+            current++;
+            let equalsToken = tokens[current];
+            if (equalsToken.tipo !== 'operador' || equalsToken.valor !== '=') {
+                throw new TypeError('Se esperaba un operador "=" después del identificador');
+            }
+            current++;
+            let valueToken = tokens[current];
+            current++;
+            let semicolonToken = tokens[current];
+            if (semicolonToken.tipo !== 'delimitador' || semicolonToken.valor !== ';') {
+                throw new TypeError('Se esperaba un delimitador ";" al final de la declaración');
+            }
             current++;
             return {
-                type: 'Palabra reservada',
-                value: token.valor
+                type: 'DeclaracionVariable',
+                name: nameToken.valor,
+                value: {
+                    type: valueToken.tipo === 'numero' ? 'LiteralNumerico' : 'ExpresionIdentificador',
+                    value: valueToken.valor
+                }
             };
         }
 
-        // Analizar números
         if (token.tipo === 'numero') {
             current++;
             return {
-                type: 'ExpresionNumerica',
+                type: 'LiteralNumerico',
                 value: token.valor
             };
         }
 
-        // Analizar operadores
-        if (token.tipo === 'operador') {
-            current++;
-            return {
-                type: 'ExpresionOperacion',
-                name: token.valor
-            };
-        }
-
-        // Analizar identificadores
         if (token.tipo === 'identificador') {
             current++;
             return {
@@ -121,7 +119,14 @@ const analisisSintactico = (tokens) => {
             };
         }
 
-        // Analizar delimitadores
+        if (token.tipo === 'operador') {
+            current++;
+            return {
+                type: 'ExpresionOperacion',
+                name: token.valor
+            };
+        }
+
         if (token.tipo === 'delimitador') {
             current++;
             return {
@@ -130,26 +135,57 @@ const analisisSintactico = (tokens) => {
             };
         }
 
-        // Lanzar error si el tipo de token es inesperado
-        throw new TypeError('Tipo de token inesperado: ' + token.tipo);
+        throw new TypeError('Tipo de nodo inesperado: ' + token.tipo);
     }
 
-    //todo AST(Árbol de Sintaxis Abstracta) inicial con un nodo de programa vacío
     let ast = {
         type: 'Program',
         body: []
     };
 
-    // Recorrer todos los tokens y construir el cuerpo del AST
     while (current < tokens.length) {
         ast.body.push(walk());
     }
 
-    // Devolver el AST completo
+    debugPrint(`Se ha completado la fase de análisis sintáctico`);
     return ast;
 }
 
+const analisisSemantico = (ast) => {
+    const variablesDeclaradas = {};
 
+    ast.body.forEach((node) => {
+        if (node.type === "DeclaracionVariable") {
+            if (variablesDeclaradas[node.name]) {
+                throw new Error(`La variable ${node.name} ya ha sido declarada`);
+            }
+            variablesDeclaradas[node.name] = true;
+        }
+    });
 
+    const traverse = (node) => {
+        if (node.type === "DeclaracionVariable") {
+            traverse(node.value);
+        } else if (node.type === "ExpresionIdentificador") {
+            if (!variablesDeclaradas[node.name]) {
+                throw new Error(`La variable ${node.name} no ha sido declarada`);
+            }
+        } else if (node.type === "LiteralNumerico") {
+            // No hay nada que hacer ya que los números son literales válidos
+        } else {
+            throw new TypeError(`Tipo de nodo inesperado: ${node.type}`);
+        }
+    }
 
+    ast.body.forEach(traverse);
+    debugPrint(`Se ha completado la fase de análisis semántico`);
 
+    return "Análisis semántico completado";
+}
+
+const debugPrint = (message) => {
+    const validacionesElement = document.getElementById("outputSemantico2");
+    const newMessageElement = document.createElement('p');
+    newMessageElement.innerText = message;
+    validacionesElement.appendChild(newMessageElement);
+}
