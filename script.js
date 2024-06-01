@@ -151,38 +151,61 @@ const analisisSintactico = (tokens) => {
     return ast;
 }
 
+/**
+ * Función que realiza el análisis semántico de un árbol de sintaxis abstracta (AST).
+ * Verifica la declaración y uso de variables en el AST.
+ *
+ * @param {Object} ast - El árbol de sintaxis abstracta a analizar.
+ * @returns {string} - Mensaje indicando que el análisis semántico se ha completado.
+ * @throws {Error} - Si una variable es declarada más de una vez o si se usa una variable no declarada.
+ */
 const analisisSemantico = (ast) => {
+    // Objeto para rastrear las variables declaradas
     const variablesDeclaradas = {};
-
+    // Primero, pasamos por las declaraciones de variables en el AST
     ast.body.forEach((node) => {
         if (node.type === "DeclaracionVariable") {
+            // Si la variable ya fue declarada, lanzamos un error
             if (variablesDeclaradas[node.name]) {
                 throw new Error(`La variable ${node.name} ya ha sido declarada`);
             }
+            // Marcamos la variable como declarada
             variablesDeclaradas[node.name] = true;
         }
     });
 
+    // Función recursiva para recorrer y validar el AST
     const traverse = (node) => {
         if (node.type === "DeclaracionVariable") {
+            // Recorremos el valor de la variable declarada
             traverse(node.value);
         } else if (node.type === "ExpresionIdentificador") {
+            // Si se encuentra un identificador, verificamos que haya sido declarado
             if (!variablesDeclaradas[node.name]) {
                 throw new Error(`La variable ${node.name} no ha sido declarada`);
             }
         } else if (node.type === "LiteralNumerico") {
-            // No hay nada que hacer ya que los números son literales válidos
+            // Los literales numéricos son válidos, no se necesita acción
         } else {
+            // Si se encuentra un tipo de nodo inesperado, lanzamos un error de tipo
             throw new TypeError(`Tipo de nodo inesperado: ${node.type}`);
         }
     }
 
+    // Recorremos el AST nuevamente para validar el uso de las variables
     ast.body.forEach(traverse);
+
+    // Imprimimos un mensaje de depuración indicando que el análisis se ha completado
     debugPrint(`Se ha completado la fase de análisis semántico`);
 
     return "Análisis semántico completado";
 }
 
+/**
+ * Función auxiliar para imprimir mensajes de depuración en el DOM.
+ *
+ * @param {string} message - El mensaje a imprimir.
+ */
 const debugPrint = (message) => {
     const validacionesElement = document.getElementById("outputSemantico2");
     const newMessageElement = document.createElement('p');
